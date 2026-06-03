@@ -92,3 +92,6 @@ a { color: var(--accent); }
 .btn:hover { border-color: #fff; }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: #04122e; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .hero-code { animation: none; } }
+
+.icon { vertical-align: -0.14em; }
+.site-header nav a { display: inline-flex; align-items: center; gap: 0.3rem; }
