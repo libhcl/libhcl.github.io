@@ -10,6 +10,10 @@ enableGitInfo = false
 [params]
   description = "Small, dependency-free HCL parsing libraries in C."
   footer = "libhcl &middot; BSD-3-Clause &middot; hand-written, zero-dependency C"
+  # Optional real video banner. Drop an mp4 under static/ (e.g. static/media/hero.mp4)
+  # and uncomment; it plays on top of the animated code backdrop.
+  # heroVideo = "media/hero.mp4"
+  # heroPoster = "media/hero.jpg"
 
 [markup.goldmark.renderer]
   unsafe = true # allow raw HTML in markdown (badges, etc.)

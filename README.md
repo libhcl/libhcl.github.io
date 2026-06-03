@@ -16,6 +16,15 @@ It covers the org's two libraries:
 - `static/css/` — the stylesheet.
 - `.github/workflows/pages.yml` — builds with Hugo and deploys to Pages.
 
+## Theme & hero banner
+
+- A light/dark toggle (☀/☾) sits in the header; the choice is saved in
+  `localStorage` and otherwise follows the OS (`prefers-color-scheme`).
+- The home page shows an animated "coding" hero (pure CSS, no asset). To use a
+  real video instead, drop an mp4 under `static/media/hero.mp4`, then set
+  `params.heroVideo = "media/hero.mp4"` (and optional `heroPoster`) in
+  `hugo.toml` — it plays on top of the animated backdrop.
+
 ## Develop
 
 ```sh

@@ -1,3 +1,45 @@
 {{ define "main" }}
+<section class="hero">
+  {{/* Always-on animated "coding" backdrop (no external asset needed). */}}
+  <div class="hero-anim" aria-hidden="true">
+    <pre class="hero-code"><code>default_action = "allow"
+
+group "web" {
+  member_mac = ["de:ad:be:ef:00:01"]
+  rule { action = "allow" direction = "ingress" proto = "tcp" dst_port = 443 }
+}
+
+locals {
+  ports   = [for s in var.services : s.port if s.public]
+  by_zone = { for s in var.services : s.zone =&gt; s.name... }
+}
+
+config = jsonencode({
+  name     = upper(var.name)
+  replicas = max(var.min, 3)
+  message  = "ready on ${join(",", local.ports)}"
+})
+</code></pre>
+  </div>
+  {{/* Optional real video banner: set params.heroVideo (and optional
+       params.heroPoster) in hugo.toml and drop the file under static/. When
+       set, it plays on top of the animated backdrop. */}}
+  {{ with .Site.Params.heroVideo }}
+  <video class="hero-video" autoplay muted loop playsinline
+         {{ with $.Site.Params.heroPoster }}poster="{{ . | relURL }}"{{ end }}>
+    <source src="{{ . | relURL }}" type="video/mp4">
+  </video>
+  {{ end }}
+  <div class="hero-scrim" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <h1 class="hero-title">libhcl</h1>
+    <p class="hero-tagline">HCL parsing, in plain&nbsp;C — hand-written, zero-dependency, BSD-3.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="{{ "c-hcl2/" | relURL }}">c-hcl2 →</a>
+      <a class="btn" href="{{ "c-hcl/" | relURL }}">c-hcl</a>
+      <a class="btn" href="https://github.com/libhcl">GitHub</a>
+    </div>
+  </div>
+</section>
 <article class="prose">{{ .Content }}</article>
 {{ end }}
