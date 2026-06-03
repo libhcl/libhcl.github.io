@@ -1,0 +1,36 @@
+baseURL = "https://libhcl.github.io/"
+title = "libhcl"
+disableKinds = ["taxonomy", "term", "RSS"]
+
+[languages.en]
+  locale = "en-US"
+  weight = 1
+enableGitInfo = false
+
+[params]
+  description = "Small, dependency-free HCL parsing libraries in C."
+  footer = "libhcl &middot; BSD-3-Clause &middot; hand-written, zero-dependency C"
+
+[markup.goldmark.renderer]
+  unsafe = true # allow raw HTML in markdown (badges, etc.)
+
+[markup.highlight]
+  noClasses = false
+  guessSyntax = true
+
+[[menu.main]]
+  name = "Home"
+  url = "/"
+  weight = 1
+[[menu.main]]
+  name = "c-hcl"
+  url = "/c-hcl/"
+  weight = 2
+[[menu.main]]
+  name = "c-hcl2"
+  url = "/c-hcl2/"
+  weight = 3
+[[menu.main]]
+  name = "GitHub"
+  url = "https://github.com/libhcl"
+  weight = 4
