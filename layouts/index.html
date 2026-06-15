@@ -1,45 +1,138 @@
-{{ define "main" }}
-<section class="hero">
-  {{/* Always-on animated "coding" backdrop (no external asset needed). */}}
-  <div class="hero-anim" aria-hidden="true">
-    <pre class="hero-code"><code>default_action = "allow"
-
-group "web" {
-  member_mac = ["de:ad:be:ef:00:01"]
-  rule { action = "allow" direction = "ingress" proto = "tcp" dst_port = 443 }
-}
-
-locals {
-  ports   = [for s in var.services : s.port if s.public]
-  by_zone = { for s in var.services : s.zone =&gt; s.name... }
-}
-
-config = jsonencode({
-  name     = upper(var.name)
-  replicas = max(var.min, 3)
-  message  = "ready on ${join(",", local.ports)}"
-})
-</code></pre>
-  </div>
-  {{/* Optional real video banner: set params.heroVideo (and optional
-       params.heroPoster) in hugo.toml and drop the file under static/. When
-       set, it plays on top of the animated backdrop. */}}
-  {{ with .Site.Params.heroVideo }}
-  <video class="hero-video" autoplay muted loop playsinline
-         {{ with $.Site.Params.heroPoster }}poster="{{ . | relURL }}"{{ end }}>
-    <source src="{{ . | relURL }}" type="video/mp4">
-  </video>
-  {{ end }}
-  <div class="hero-scrim" aria-hidden="true"></div>
-  <div class="hero-inner">
-    <h1 class="hero-title">libhcl</h1>
-    <p class="hero-tagline">HCL parsing, in plain&nbsp;C — hand-written, zero-dependency, BSD-3.</p>
-    <div class="hero-cta">
-      <a class="btn btn-primary" href="{{ "c-hcl2/" | relURL }}">c-hcl2 →</a>
-      <a class="btn" href="{{ "c-hcl/" | relURL }}">c-hcl</a>
-      <a class="btn" href="https://github.com/libhcl">{{ partial "gh-icon.html" . }} GitHub</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ .Site.Title }} — HCL parsers in plain C</title>
+<meta name="description" content="HCL parsers written in hand-written, dependency-free C (BSD-3-Clause): c-hcl, a reusable parser for the declarative HCL subset with a generic zero-dependency AST; and c-hcl2, a from-scratch full HCL2 implementation. No flex/bison, no third-party libraries — just cc *.c.">
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1b1f24; --muted: #57606a; --card: #f6f8fa;
+    --border: #d0d7de; --accent: #6d28d9; --accent-fg: #ffffff;
+    --subset: #6d28d9; --full: #9a6700;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --card: #161b22;
+      --border: #30363d; --accent: #a78bfa; --accent-fg: #0d1117;
+      --subset: #a78bfa; --full: #d29922;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+  header { padding: 72px 0 32px; text-align: center; }
+  .logo { width: 88px; height: 88px; margin: 0 auto 18px; display: block; }
+  h1 { font-size: 2.6rem; margin: 0 0 .3em; letter-spacing: -.02em; }
+  .tagline { font-size: 1.2rem; color: var(--muted); margin: 0 auto; max-width: 680px; }
+  .pills { margin: 22px 0 0; }
+  .pill {
+    display: inline-block; margin: 4px; padding: 3px 10px; font-size: .82rem;
+    color: var(--muted); background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+  }
+  .cta { margin: 30px 0 0; }
+  .btn {
+    display: inline-block; padding: 10px 18px; margin: 4px; border-radius: 8px; text-decoration: none;
+    font-weight: 600; border: 1px solid var(--border);
+  }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  .btn.ghost { color: var(--fg); background: transparent; }
+  .lead { color: var(--fg); max-width: 800px; margin: 8px auto 0; text-align: center; }
+  .lead code { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; }
+  h2.section { text-align: center; margin: 40px 0 4px; font-size: 1.4rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 16px 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; }
+  .card h3 { margin: 0 0 .35em; font-size: 1.2rem; display: flex; align-items: center; justify-content: space-between; }
+  .card h3 a { text-decoration: none; }
+  .card .accel { color: var(--muted); font-size: .85rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; margin: 0 0 .6em; }
+  .card p { margin: 0 0 .8em; color: var(--fg); font-size: .95rem; }
+  .card .badges { margin-top: auto; }
+  .card .badges img { height: 20px; vertical-align: middle; }
+  .kind { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
+  .kind.subset { color: var(--subset); }
+  .kind.full { color: var(--full); }
+  .card h3 .tags { display: inline-flex; gap: 6px; }
+  .type { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); }
+  .type.lib { color: var(--accent); border-color: var(--accent); }
+  .type.cli { color: var(--accent-fg); background: var(--accent); border-color: var(--accent); }
+  .principles { color: var(--muted); text-align: center; padding: 10px 0 0; max-width: 820px; margin: 0 auto; }
+  footer { color: var(--muted); text-align: center; padding: 40px 0 56px; font-size: .9rem; }
+  a { color: var(--accent); }
+</style>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+  <header class="wrap">
+    <img class="logo" src="/img/logo.svg" alt="libhcl logo" width="88" height="88">
+    <h1>libhcl</h1>
+    <p class="tagline"><strong>HCL parsers</strong> written in hand-written,
+      dependency-free <strong>C</strong> — <code>c-hcl</code>, a reusable parser
+      for the declarative HCL subset, and <code>c-hcl2</code>, a from-scratch
+      full HCL2 implementation. No flex/bison, no third-party libraries — just
+      <code>cc *.c</code>.</p>
+    <div class="pills">
+      <span class="pill">C99</span>
+      <span class="pill">zero dependencies</span>
+      <span class="pill">no flex / no bison</span>
+      <span class="pill">immutable AST</span>
+      <span class="pill">fuzzed · allocation fault-injection</span>
+      <span class="pill">BSD-3-Clause</span>
     </div>
-  </div>
-</section>
-<article class="prose">{{ .Content }}</article>
-{{ end }}
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/libhcl/c-hcl">Documentation</a>
+      <a class="btn ghost" href="https://github.com/libhcl">GitHub</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p class="lead">Two HCL parsers live here, both in plain <strong>C</strong> and
+      both designed to be embedded as a git submodule. <code>c-hcl</code> covers
+      the <strong>declarative subset</strong> of HCL native syntax — attributes and
+      labeled blocks with scalar/list values — over a generic, zero-dependency AST
+      (it was extracted from <code>socket_vmnet</code>). <code>c-hcl2</code> is a
+      <strong>from-scratch HCL2</strong> implementation whose first milestone is the
+      expression engine. Different scope, same place in the stack, same engineering bar.</p>
+
+    <p class="lead"><strong>Hand-written, not generated.</strong> The reference
+      <code>hashicorp/hcl</code> pairs a ragel-generated scanner with a hand-written
+      parser; libhcl is hand-written end to end for the same reasons — zero build
+      dependencies (<code>cc *.c</code> is the whole build), precise line/column
+      errors, and every line reachable by tests, including out-of-memory paths via
+      an allocation-budget fault-injection hook. Each repo carries a
+      <code>GRAMMAR.md</code> derived directly from its lexer/parser, ships a
+      deterministic fuzzer, and stays clean under AddressSanitizer. BSD-3-Clause throughout.</p>
+
+    <h2 class="section">Repositories</h2>
+    <section class="grid">
+      {{ range .Site.Params.repos }}
+      <article class="card">
+        <h3>
+          <a href="https://github.com/libhcl/{{ .name }}"><code>{{ .name }}</code></a>
+          <span class="tags"><span class="type {{ .type }}">{{ .type }}</span><span class="kind {{ .kind }}">{{ .kind }}</span></span>
+        </h3>
+        <p class="accel">{{ .accel }}</p>
+        <p>{{ .result }}</p>
+        <div class="badges">
+          <a href="https://github.com/libhcl/{{ .name }}"><img src="https://img.shields.io/badge/C-C99-6d28d9" alt="C99"></a>
+          <img src="https://img.shields.io/badge/license-BSD--3--Clause-blue" alt="BSD-3-Clause">
+        </div>
+      </article>
+      {{ end }}
+    </section>
+    <p class="principles">Every library is hand-written C99 with no third-party code:
+      parse once into an immutable AST, walk it with accessors, then free. Tests drive
+      an allocation-budget fault-injection hook to reach out-of-memory paths, a
+      deterministic fuzzer (<code>make fuzz</code>) shakes the parsers, and both build
+      clean under AddressSanitizer. <code>c-hcl</code> sits at ~99% line coverage;
+      <code>c-hcl2</code> is milestone-based and not yet spec-complete. BSD-3-Clause throughout.</p>
+  </main>
+
+  <footer class="wrap">
+    BSD-3-Clause · <a href="https://github.com/libhcl">github.com/libhcl</a> ·
+    HCL parsers in plain C
+  </footer>
+</body>
+</html>

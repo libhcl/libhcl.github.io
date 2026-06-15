@@ -1,40 +1,23 @@
 baseURL = "https://libhcl.github.io/"
 title = "libhcl"
-disableKinds = ["taxonomy", "term", "RSS"]
-
-[languages.en]
-  locale = "en-US"
-  weight = 1
-enableGitInfo = false
-
-[params]
-  description = "Small, dependency-free HCL parsing libraries in C."
-  footer = "libhcl &middot; BSD-3-Clause &middot; hand-written, zero-dependency C"
-  # Optional real video banner. Drop an mp4 under static/ (e.g. static/media/hero.mp4)
-  # and uncomment; it plays on top of the animated code backdrop.
-  # heroVideo = "media/hero.mp4"
-  # heroPoster = "media/hero.jpg"
+disableKinds = ["taxonomy", "term", "RSS", "sitemap", "404"]
 
 [markup.goldmark.renderer]
-  unsafe = true # allow raw HTML in markdown (badges, etc.)
+  unsafe = true
 
-[markup.highlight]
-  noClasses = false
-  guessSyntax = true
-
-[[menu.main]]
-  name = "Home"
-  url = "/"
-  weight = 1
-[[menu.main]]
+# Each repo card. "result" is the honest headline (what the library is + its
+# real state). "kind" = subset vs full HCL2; "type" = lib (both are C parser
+# libraries, embedded as submodules). No CI/coverage badges: neither C repo
+# ships a workflow that measures them, so we don't claim one.
+[[params.repos]]
   name = "c-hcl"
-  url = "/c-hcl/"
-  weight = 2
-[[menu.main]]
+  accel = "Declarative HCL subset — config reader (hand-written C)"
+  kind = "subset"
+  type = "lib"
+  result = "A small, dependency-free C parser for the declarative subset of HCL native syntax — attributes and labeled blocks with scalar/list values. Generic zero-dependency AST, extracted from socket_vmnet; parse once into an immutable tree, walk with accessors, then free. Allocation fault-injection in tests, fuzzed, clean under AddressSanitizer (~99% line coverage)."
+[[params.repos]]
   name = "c-hcl2"
-  url = "/c-hcl2/"
-  weight = 3
-[[menu.main]]
-  name = "GitHub"
-  url = "https://github.com/libhcl"
-  weight = 4
+  accel = "Full HCL2 from scratch — expression engine (milestone 1)"
+  kind = "full"
+  type = "lib"
+  result = "A from-scratch C implementation of HCL2. Milestone 1 lands the expression engine: lexer, parser, a cty-lite value model with conversions and unknowns, templates, builtins, and a JSON value reader. Same hand-written, dependency-free spirit as c-hcl — no flex/bison, just cc *.c. Milestone-based; not yet spec-complete."
