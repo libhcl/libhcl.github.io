@@ -12,12 +12,30 @@
     --subset: #6d28d9; --full: #9a6700;
   }
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme]) {
       --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --card: #161b22;
       --border: #30363d; --accent: #a78bfa; --accent-fg: #0d1117;
       --subset: #a78bfa; --full: #d29922;
     }
   }
+  /* Forced dark (manual toggle wins over the OS preference). */
+  :root[data-theme="dark"] {
+  --bg: #0d1117; --fg: #e6edf3; --muted: #9198a1; --card: #161b22;
+  --border: #30363d; --accent: #a78bfa; --accent-fg: #0d1117;
+  --subset: #a78bfa; --full: #d29922;
+  }
+  /* Forced light (manual toggle wins over the OS preference). */
+  :root[data-theme="light"] {
+  --bg: #ffffff; --fg: #1b1f24; --muted: #57606a; --card: #f6f8fa;
+  --border: #d0d7de; --accent: #6d28d9; --accent-fg: #ffffff;
+  --subset: #6d28d9; --full: #9a6700;
+  }
+  .theme-toggle {
+    position: fixed; top: 14px; right: 14px; z-index: 10;
+    font: inherit; font-size: .8rem; cursor: pointer; padding: 6px 12px;
+    color: var(--fg); background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+  }
+  .theme-toggle:hover { border-color: var(--accent); }
   * { box-sizing: border-box; }
   body {
     margin: 0; background: var(--bg); color: var(--fg);
@@ -63,8 +81,13 @@
   a { color: var(--accent); }
 </style>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<script>
+  // Apply the saved theme before first paint to avoid a flash; "system" leaves no attribute.
+  (function(){var m=localStorage.getItem('theme');if(m&&m!=='system')document.documentElement.setAttribute('data-theme',m);})();
+</script>
 </head>
 <body>
+  <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light, dark or system theme"><span id="theme-label">🖥️ System</span></button>
   <header class="wrap">
     <img class="logo" src="/img/logo.svg" alt="libhcl logo" width="88" height="88">
     <h1>libhcl</h1>
@@ -134,5 +157,15 @@
     BSD-3-Clause · <a href="https://github.com/libhcl">github.com/libhcl</a> ·
     HCL parsers in plain C
   </footer>
+  <script>
+  (function(){
+    var order=['system','light','dark'], root=document.documentElement;
+    var labels={system:'🖥️ System',light:'☀️ Light',dark:'🌙 Dark'};
+    function apply(m){ if(m==='system'){root.removeAttribute('data-theme');}else{root.setAttribute('data-theme',m);} localStorage.setItem('theme',m); var el=document.getElementById('theme-label'); if(el)el.textContent=labels[m]; }
+    var mode=localStorage.getItem('theme')||'system'; apply(mode);
+    var btn=document.getElementById('theme-toggle');
+    if(btn) btn.addEventListener('click',function(){ mode=order[(order.indexOf(mode)+1)%order.length]; apply(mode); });
+  })();
+  </script>
 </body>
 </html>
