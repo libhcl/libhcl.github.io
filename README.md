@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/libhcl/brand/main/social/libhcl.png" alt="libhcl/libhcl.github.io" width="720"></p>
+
 # libhcl.github.io
 
 The documentation site for the **libhcl** organization, built with
