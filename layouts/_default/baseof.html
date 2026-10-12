@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{/* Dark Reader repaints pages that already draw their own dark theme, as this one does: ask it to stand aside. */}}
+  <meta name="darkreader-lock">
   <title>{{ if .IsHome }}{{ .Site.Title }} &middot; HCL in C{{ else }}{{ .Title }} &middot; {{ .Site.Title }}{{ end }}</title>
   <meta name="description" content="{{ .Description | default .Site.Params.description }}">
   {{/* set the saved theme before paint to avoid a flash of the wrong theme */}}
